@@ -88,6 +88,7 @@
 #define INCLUDE_xTaskGetSchedulerState               1
 #define INCLUDE_xTimerPendFunctionCall               1
 #define INCLUDE_xSemaphoreGetMutexHolder             1
+#define INCLUDE_eTaskGetState                        1
 
 /* Cortex-M specific definitions. */
 #ifdef __NVIC_PRIO_BITS

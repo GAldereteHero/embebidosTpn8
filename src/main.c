@@ -84,6 +84,31 @@ void Blinking(void * parameters) {
     }
 }
 
+void TecScan(void * state) {
+    TaskHandle_t tarea;
+    bool taskState = state;
+    
+    tarea = xTaskGetHandle("Rojo");
+
+    while (true) {
+        if(DigitalInputHasActivated(board->boton_cambiar)){
+         if(taskState){
+            vTaskSuspend(tarea);
+            taskState = false;
+         }else {
+            vTaskResume(tarea);
+            taskState = true;
+        } 
+        }
+
+        if(DigitalInputHasActivated(board->boton_prender)){
+            DigitalOutputToggle(board->led_azul);
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(150));
+    }
+}
+
 /* === Definiciones de funciones externas ================================== */
 
 /** @brief Función principal del programa
@@ -96,6 +121,7 @@ void Blinking(void * parameters) {
 int main(void) {
     /* Inicializaciones y configuraciones de dispositivos */
     static struct parametros_s parametros[2];
+    static bool taskState = true;    
     
     board = BoardCreate();
 
@@ -108,6 +134,7 @@ int main(void) {
     /* Creación de las tareas */
     xTaskCreate(Blinking, "Rojo", configMINIMAL_STACK_SIZE, &parametros[0], tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(Blinking, "Verde", configMINIMAL_STACK_SIZE, &parametros[1], tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(TecScan, "EscanearTeclado", configMINIMAL_STACK_SIZE, &taskState, tskIDLE_PRIORITY + 2, NULL);
 
     /* Arranque del sistema operativo */
     vTaskStartScheduler();
