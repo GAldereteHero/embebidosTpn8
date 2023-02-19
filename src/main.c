@@ -84,6 +84,17 @@ void Blinking(void * parameters) {
     }
 }
 
+void BlinkingSinc(void * parameters) {
+    parametros_t parametros = (parametros_t) parameters;
+    TickType_t ultimo_valor;
+
+    ultimo_valor = xTaskGetTickCount();
+    while (true) {
+        DigitalOutputToggle(parametros->led);
+        vTaskDelayUntil(&ultimo_valor, pdMS_TO_TICKS(parametros->delay));
+    }
+}
+
 void TecScan(void * state) {
     TaskHandle_t tarea;
     bool taskState = state;
@@ -120,7 +131,7 @@ void TecScan(void * state) {
  */
 int main(void) {
     /* Inicializaciones y configuraciones de dispositivos */
-    static struct parametros_s parametros[2];
+    static struct parametros_s parametros[3];
     static bool taskState = true;    
     
     board = BoardCreate();
@@ -131,9 +142,13 @@ int main(void) {
     parametros[1].led = board->led_verde;
     parametros[1].delay = 750;
 
+    parametros[2].led = board->led_amarillo;
+    parametros[2].delay = 250;
+
     /* Creación de las tareas */
     xTaskCreate(Blinking, "Rojo", configMINIMAL_STACK_SIZE, &parametros[0], tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(Blinking, "Verde", configMINIMAL_STACK_SIZE, &parametros[1], tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(BlinkingSinc, "Amarillo", configMINIMAL_STACK_SIZE, &parametros[2], tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(TecScan, "EscanearTeclado", configMINIMAL_STACK_SIZE, &taskState, tskIDLE_PRIORITY + 2, NULL);
 
     /* Arranque del sistema operativo */
